@@ -1,19 +1,24 @@
-import Image from "next/image";
-import Rogen from "../Rogen";
+"use client";
+import { useState } from "react";
 import "./anim.css";
+import { usePathname } from "next/navigation";
 
-function Input({ className, placeholder }: { className?: string, placeholder: string }) {
-  return <input className={"rounded-full bg-white px-4 py-2 focus:outline-none text-black " + className} 
-  placeholder={placeholder}/>
+function Input(props: any) {
+  return <input className={"rounded-full bg-white px-4 py-2 focus:outline-none text-black " + props.className} 
+  placeholder={props.placeholder} onChange={props.onChange} />
 }
 
-function Button({ className, placeholder }: { className?: string, placeholder: string }) {
-  return <button className={"rounded-full px-4 py-2 bg-[#9767FF] font-bold focus:outline-none text-white " + className}>
-    {placeholder}
+function Button(props: any) {
+  return <button className={"rounded-full px-4 py-2 bg-[#9767FF] font-bold focus:outline-none text-white " + props.className} onClick={props.onClick}>
+    {props.placeholder}
   </button>
 }
 
 export default function Home() {
+
+  const [input, setInput] = useState("");
+  const p = usePathname();
+
   return (
     <main>
       <div className="w-full flex">
@@ -23,8 +28,8 @@ export default function Home() {
             Generate your own roguelike.<br />
             Create.
           </div>
-          <Input className="my-8 w-5/6" placeholder="Starwars styled..."/>
-          <Button className="m-2" placeholder="Create" />
+          <Input className="my-8 w-5/6" placeholder="Starwars styled..." onChange={() => setInput(input)} />
+          <Button className="m-2" placeholder="Create" onClick={() => } />
         </div>
         </div>
         <ul className="circles">
