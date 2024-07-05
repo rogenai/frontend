@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import "./anim.css";
-import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 function Input(props: any) {
   return <input className={"rounded-full bg-white px-4 py-2 focus:outline-none text-black " + props.className} 
@@ -17,7 +17,7 @@ function Button(props: any) {
 export default function Home() {
 
   const [input, setInput] = useState("");
-  const p = usePathname();
+  const p = useRouter();
 
   return (
     <main>
@@ -28,8 +28,8 @@ export default function Home() {
             Generate your own roguelike.<br />
             Create.
           </div>
-          <Input className="my-8 w-5/6" placeholder="Starwars styled..." onChange={() => setInput(input)} />
-          <Button className="m-2" placeholder="Create" onClick={() => } />
+          <Input className="my-8 w-5/6" placeholder="Starwars styled..." onChange={(e: any) => setInput(e.target.value)} />
+          <Button className="m-2" placeholder="Create" onClick={() => { p.push("/game?c=" + input) }} />
         </div>
         </div>
         <ul className="circles">

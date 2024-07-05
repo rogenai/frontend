@@ -24,10 +24,12 @@ export class Game extends Scene
     create ()
     {
         const map = [
-            [0, 1, 0, 1],
-            [0, 1, 2, 1],
-            [1, 0, 2, 0],
-            [1, 1, 1, 1]
+            [2, 2, 2, 2, 2, 2, 2],
+            [2, 1, 2, 1, 1, 0, 2],
+            [2, 0, 2, 0, 1, 0, 2],
+            [2, 1, 1, 1, 0, 0, 2],
+            [2, 3, 0, 0, 0, 0, 2],
+            [2, 2, 2, 2, 2, 2, 2]
         ];
 
         this.camera = this.cameras.main;
@@ -44,7 +46,7 @@ export class Game extends Scene
         {
             for (let j = 0; j < map[i].length; j++)
             {
-                if (map[i][j] === 1)
+                if (map[i][j] === 2)
                 {
                     const platform = this.platforms.create(j * tilesize + offset, i * tilesize + offset, 'wall');
                     platform.setSize(tilesize, tilesize);
@@ -59,20 +61,28 @@ export class Game extends Scene
         {
             for (let j = 0; j < map[i].length; j++)
             {
-                if (map[i][j] === 2)
+                if (map[i][j] === 1)
                 {
                     const enemy = new Enemy(this.enemies.create(j * tilesize + offset, i * tilesize + offset, 'enemy'));
                 }
             }
         }
+        for (let i = 0; i < map.length; i++)
+        {
+            for (let j = 0; j < map[i].length; j++)
+            {
+                if (map[i][j] === 3)
+                {
+                    this.player = new Player(this.physics.add.sprite(j * tilesize + offset, i * tilesize + offset, 'player'));
+                }
+            }
+        }
+        this.sword = this.add.image(this.player!.obj.x + swordOffset, this.player!.obj.y, 'sword');
 
-        this.player = new Player(this.physics.add.sprite(100, 450, 'player'));
-        this.sword = this.add.image(this.player.obj.x + swordOffset, this.player.obj.y, 'sword');
-
-        this.camera.startFollow(this.player.obj);
+        this.camera.startFollow(this.player!.obj);
         this.camera.setBounds(0, 0, 1024, 768);
         this.camera.zoom = 1.5;
-        this.physics.add.collider(this.player.obj, this.platforms);
+        this.physics.add.collider(this.player!.obj, this.platforms);
         this.physics.add.collider(this.enemies, this.platforms);
 
         this.input.on('pointerdown', (pointer: any) => {

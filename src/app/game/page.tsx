@@ -1,9 +1,10 @@
+"use client"
 import Rogen from "@/src/Rogen";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 
-const BACKEND = "157.245.2.36";
+const BACKEND = "157.245.2.36:3000";
 
 const Page = () => {
     const query = useSearchParams();
@@ -34,7 +35,7 @@ const Page = () => {
                 setWeapon(weapon.response);
             }
         }
-        fetchLevel();
+        // fetchLevel();
     }, []);
 
     return (
