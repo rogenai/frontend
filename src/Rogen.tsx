@@ -1,10 +1,10 @@
 "use client";
 import { PhaserGame } from './game/PhaserGame';
 
-function App()
+function App(props: any)
 {
     return (
-        <PhaserGame />
+        <PhaserGame {...props} />
     )
 }
 

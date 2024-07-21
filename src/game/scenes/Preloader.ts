@@ -21,6 +21,8 @@ export class Preloader extends Scene
     preload ()
     {
         this.load.setPath('assets');
+        this.load.image('floor', 'floor.png');
+        this.load.image('bullet', 'bullet.png');
         this.load.image('sword', 'sword.png');
         this.load.image('player', 'player.png');
         this.load.image('wall', 'wall.png');

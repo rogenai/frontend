@@ -1,85 +1,63 @@
-import { forwardRef, useEffect, useLayoutEffect, useRef } from 'react';
-import StartGame from './main';
-import { EventBus } from './EventBus';
+import { useEffect, useLayoutEffect, useRef} from 'react';
+import { Boot } from './scenes/Boot';
+import { Game as MainGame } from './scenes/Game';
+import { AUTO, Game } from 'phaser';
+import { Preloader } from './scenes/Preloader';
+import { GameOver } from './scenes/GameOver';
 
-export interface IRefPhaserGame
-{
-    game: Phaser.Game | null;
-    scene: Phaser.Scene | null;
-}
+const config: Phaser.Types.Core.GameConfig = {
+    type: AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game-container',
+    backgroundColor: '#028af8',
+    scene: [
+        Boot,
+        Preloader,
+        MainGame,
+        GameOver
+    ],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0, x: 0 },
+            debug: false
+        }
+    }
+};
 
-interface IProps
-{
-    currentActiveScene?: (scene_instance: Phaser.Scene) => void
-}
-
-export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(function PhaserGame({ currentActiveScene }, ref)
-{
+export const PhaserGame = ({ level }: { level: number[][] }) => {
     const game = useRef<Phaser.Game | null>(null!);
 
     useLayoutEffect(() =>
     {
-        if (game.current === null)
-        {
+        game.current = new Game({ ...config, parent: 'game-container' });
 
-            game.current = StartGame("game-container");
-
-            if (typeof ref === 'function')
-            {
-                ref({ game: game.current, scene: null });
-            } else if (ref)
-            {
-                ref.current = { game: game.current, scene: null };
-            }
-
-        }
-
+        
         return () =>
         {
             if (game.current)
             {
                 game.current.destroy(true);
-                if (game.current !== null)
-                {
-                    game.current = null;
-                }
             }
         }
-    }, [ref]);
+    }, []);
 
-    useEffect(() =>
-    {
-        EventBus.on('current-scene-ready', (scene_instance: Phaser.Scene) =>
-        {
-            if (currentActiveScene && typeof currentActiveScene === 'function')
-            {
-
-                currentActiveScene(scene_instance);
-
-            }
-
-            if (typeof ref === 'function')
-            {
-
-                ref({ game: game.current, scene: scene_instance });
-            
-            } else if (ref)
-            {
-
-                ref.current = { game: game.current, scene: scene_instance };
-
-            }
-            
-        });
-        return () =>
-        {
-
-            EventBus.removeListener('current-scene-ready');
+    useEffect(() => {
+        window.onresize = () => {
+            game.current!.scale.resize(window.innerWidth, window.innerHeight);
+        };
         
+        if (window) {
+            if (game.current) {
+                game.current!.scale.resize(window.innerWidth, window.innerHeight);
+            }
+
+            game.current!.scene.start('Game', { level });
         }
-    }, [currentActiveScene, ref]);
+    }, []);
     
     return (
         <div id="game-container"></div>
     );
-});
+}

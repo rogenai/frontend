@@ -208,7 +208,7 @@ body {
     }
 
     100%{
-        background: rgba(0, 255, 26, 0.5);
+        background: rgba(34, 30, 255, 0.5);
         transform: translateY(-1000px) rotate(720deg);
         opacity: 0;
         border-radius: 50%;

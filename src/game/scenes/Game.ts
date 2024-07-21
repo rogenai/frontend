@@ -1,202 +1,185 @@
-import { EventBus } from '../EventBus';
 import { Scene } from 'phaser';
 import { Player } from '../object/Player';
-import { Enemy } from '../object/Enemy';
+import { Orc, ShooterOrc } from '../object/Enemy';
+import { SpriteObject } from '../object/Entity';
 
-
-const swordOffset = 10;
 export class Game extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera | undefined;
     background: Phaser.GameObjects.Image | undefined;
     gameText: Phaser.GameObjects.Text | undefined;
     player: Player | undefined;
-    enemies: Phaser.Physics.Arcade.Group | undefined;
+    objects: Phaser.Physics.Arcade.Group | undefined;
     platforms: Phaser.Physics.Arcade.StaticGroup | undefined;
-    sword: Phaser.GameObjects.Image | undefined;
-    enemyMoveTimer: Phaser.Time.TimerEvent | undefined;
-    
+    level: number[][] = [];
+
     constructor ()
     {
         super('Game');
     }
 
-    create ()
+    preload() {
+        this.load.spritesheet('orc_idle', 'assets/orc.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('orc_walk', 'assets/orc_walk.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('orc_attack', 'assets/orc_attack.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('sorc_idle', 'assets/sorc.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('sorc_walk', 'assets/sorc_walk.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('player_walk', 'assets/player_walk.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 7 });
+        this.load.spritesheet('player_idle', 'assets/player_idle.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('player_attack1', 'assets/player_attack1.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('player_attack2', 'assets/player_attack2.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 5 });
+        this.load.spritesheet('player_attack3', 'assets/player_attack3.png', { frameWidth: 100, frameHeight: 100, startFrame: 0, endFrame: 8 });
+    }
+    
+    init(data: any) {
+        this.level = data.level;
+    }
+
+    create()
     {
-        const map = [
-            [2, 2, 2, 2, 2, 2, 2],
-            [2, 1, 2, 1, 1, 0, 2],
-            [2, 0, 2, 0, 1, 0, 2],
-            [2, 1, 1, 1, 0, 0, 2],
-            [2, 3, 0, 0, 0, 0, 2],
-            [2, 2, 2, 2, 2, 2, 2]
-        ];
-
         this.camera = this.cameras.main;
-        this.camera.setBackgroundColor('#000000');
-
-        this.background = this.add.image(512, 384, 'background');
-        this.background.setAlpha(0.5);
+        this.camera.setBackgroundColor('#3d3d3d');
         
         this.platforms = this.physics.add.staticGroup();
+        this.objects = this.physics.add.group();
 
         const tilesize = 30;
-        const offset = 200;
-        for (let i = 0; i < map.length; i++)
-        {
-            for (let j = 0; j < map[i].length; j++)
+        const offset = 0;
+
+        this.anims.create({
+            key: 'orc_idle',
+            frames: this.anims.generateFrameNumbers('orc_idle', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'orc_walk',
+            frames: this.anims.generateFrameNumbers('orc_walk', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'orc_attack',
+            frames: this.anims.generateFrameNumbers('orc_attack', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'sorc_idle',
+            frames: this.anims.generateFrameNumbers('sorc_idle', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'sorc_walk',
+            frames: this.anims.generateFrameNumbers('sorc_walk', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'player_idle',
+            frames: this.anims.generateFrameNumbers('player_idle', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: -1
+        });
+
+        this.anims.create({
+            key: 'player_walk',
+            frames: this.anims.generateFrameNumbers('player_walk', { start: 0, end: 7 }),
+            frameRate: 10,
+            repeat: -1
+        })
+
+        this.anims.create({
+            key: 'player_attack1',
+            frames: this.anims.generateFrameNumbers('player_attack1', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: 0
+        })
+        
+        this.anims.create({
+            key: 'player_attack2',
+            frames: this.anims.generateFrameNumbers('player_attack2', { start: 0, end: 5 }),
+            frameRate: 10,
+            repeat: 0
+        })
+
+        this.anims.create({
+            key: 'player_attack3',
+            frames: this.anims.generateFrameNumbers('player_attack3', { start: 0, end: 8 }),
+            frameRate: 10,
+            repeat: 0
+        })
+
+        
+        for (let i = 0; i < this.level.length; i++) {
+            for (let j = 0; j < this.level[i].length; j++)
             {
-                if (map[i][j] === 2)
+                const floor = this.add.image(j * tilesize + offset, i * tilesize + offset, 'floor');
+                floor.setDisplaySize(tilesize, tilesize);
+            }
+        }  
+
+        let h = false;
+        for (let i = 0; i < this.level.length; i++)
+        {
+            for (let j = 0; j < this.level[i].length; j++)
+            {
+                if (this.level[i][j] === 2)
                 {
                     const platform = this.platforms.create(j * tilesize + offset, i * tilesize + offset, 'wall');
                     platform.setSize(tilesize, tilesize);
                     platform.setDisplaySize(tilesize, tilesize);
                 }
-            }
-        }
-
-        this.enemies = this.physics.add.group();
-
-        for (let i = 0; i < map.length; i++)
-        {
-            for (let j = 0; j < map[i].length; j++)
-            {
-                if (map[i][j] === 1)
+                else if (this.level[i][j] === 1)
                 {
-                    const enemy = new Enemy(this.enemies.create(j * tilesize + offset, i * tilesize + offset, 'enemy'));
+                    const enemy = new Orc(this, j * tilesize + offset, i * tilesize + offset);
                 }
-            }
-        }
-        for (let i = 0; i < map.length; i++)
-        {
-            for (let j = 0; j < map[i].length; j++)
-            {
-                if (map[i][j] === 3)
+                else if (this.level[i][j] === 3)
                 {
-                    this.player = new Player(this.physics.add.sprite(j * tilesize + offset, i * tilesize + offset, 'player'));
+                    h = true;
+                    console.log("e");
+                    this.player = new Player(this, 'player', 20, 10, j * tilesize + offset, i * tilesize + offset);
+                }
+                else if (this.level[i][j] === 4)
+                {
+                    const enemy = new ShooterOrc(this, j * tilesize + offset, i * tilesize + offset);
                 }
             }
         }
-        this.sword = this.add.image(this.player!.obj.x + swordOffset, this.player!.obj.y, 'sword');
 
-        this.camera.startFollow(this.player!.obj);
-        this.camera.setBounds(0, 0, 1024, 768);
-        this.camera.zoom = 1.5;
-        this.physics.add.collider(this.player!.obj, this.platforms);
-        this.physics.add.collider(this.enemies, this.platforms);
-
-        this.input.on('pointerdown', (pointer: any) => {
-            this.tweens.add({
-                targets: this.sword!,
-                angle: { from: '0', to: '360' },
-                duration: 1000,
-                ease: 'Linear',
-                onUpdate: () => {
-                    this.updateSwordPosition();
-                },
-                onComplete: () => {
-                    this.player!.facing = 'right';
-                }
-            });
-            this.player!.facing = 'none';
-        });
-
-        this.enemyMoveTimer = this.time.addEvent({
-            delay: 1000,
-            callback: this.actionEnemies,
-            callbackScope: this,
-            loop: true
-        });
+        if (!h) {
+            this.player = new Player(this, 'player', 20, 10, 0, 0);
+        }
         
-        EventBus.emit('current-scene-ready', this);
-    }
+        this.camera.startFollow(this.player!);
+        this.camera.zoom = 2;
 
-    actionEnemies() {
-        this.enemies?.getChildren().forEach((enemy: Phaser.GameObjects.GameObject, index) => {
-            const x = Math.floor(Math.random() * 3) - 1;
-            const y = Math.floor(Math.random() * 3) - 1;
-            (enemy as any).setVelocity(x * 50, y * 50);
-
-            // shoot
-            
-        });
-    }
-
-    updateSwordPosition() {
-        let angle = this.sword?.angle!;
-        
-        let tipX = this.player?.obj.x! + swordOffset * Math.cos(Phaser.Math.DegToRad(angle));
-        let tipY = this.player?.obj.y! + swordOffset * Math.sin(Phaser.Math.DegToRad(angle));
-        
-        this.sword!.setPosition(tipX, tipY);
-    }
-
-    update(time: number, delta: number): void {
-        const cursors = this.input.keyboard!.createCursorKeys();
-        this.checkSwordCollision();
-
-        if (cursors.left.isDown)
-        {
-            this.player?.obj.setVelocityX(-160);
-            this.player!.facing = 'left';
-        }
-
-        if (cursors.up.isDown)
-        {
-            this.player?.obj.setVelocityY(-160);
-        }
-
-        if (cursors.down.isDown)
-        {
-            this.player?.obj.setVelocityY(160);
-        }
-
-        if (cursors.right.isDown)
-        {
-            this.player?.obj.setVelocityX(160);
-            this.player!.facing = 'right';
-        }
-
-        if (!(cursors.down.isDown || cursors.up.isDown)) {
-            this.player?.obj.setVelocityY(0);
-        }
-
-        if (!(cursors.right.isDown || cursors.left.isDown)) {
-            this.player?.obj.setVelocityX(0);
-        }
-
-        this.updateSword();
-    }
-
-    updateSword() {
-        if (this.player?.facing === "none") return;
-        switch(this.player?.facing) {
-            case 'left':
-                this.sword!.scaleX = 1;
-                this.sword?.setX(this.player!.obj.x - swordOffset);
-                break;
-            case 'right':
-                this.sword?.setX(this.player!.obj.x + swordOffset);
-                this.sword!.scaleX = -1;
-                break;
-        }
-        this.sword?.setY(this.player?.obj.y);
-    }
-
-    checkSwordCollision() {
-        this.enemies?.getChildren().forEach((enemy: Phaser.GameObjects.GameObject, index) => {
-            if (Phaser.Geom.Intersects.RectangleToRectangle(
-                this.sword!.getBounds(),
-                (enemy as any).getBounds()
-            )) {
-                console.log('Enemy hit!');
-                enemy.destroy();
+        this.physics.add.collider(this.objects, this.platforms, (a, b) => {
+            if ((a as any).type === "bullet") {
+                a.destroy();
             }
         });
+
+        this.physics.add.overlap(this.objects, this.objects, (a, b) => {
+            (a as any).collide(b);
+            (b as any).collide(a);
+        }, undefined, this);
     }
 
-    changeScene ()
+    update() {
+        if (this.player!.health <= 0) {
+            this.changeScene();
+        }
+    }
+
+    changeScene()
     {
-        this.scene.start('GameOver')
+        this.scene.start('GameOver');
     }
 }
