@@ -1,3 +1,4 @@
+"use client"
 import { useEffect, useLayoutEffect, useRef} from 'react';
 import { Boot } from './scenes/Boot';
 import { Game as MainGame } from './scenes/Game';
