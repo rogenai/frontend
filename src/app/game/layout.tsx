@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import '../globals.css';
+import Tracker from '@/src/components/tracker';
 
 export const metadata = {
   title: 'Next.js',
@@ -14,6 +15,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
+        <Tracker />
         <Suspense>
           {children}
         </Suspense>
