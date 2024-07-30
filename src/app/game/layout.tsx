@@ -1,5 +1,6 @@
 import { Suspense } from 'react';
 import '../globals.css';
+import { GoogleAnalytics } from '@next/third-parties/google';
 
 export const metadata = {
   title: 'Game',
@@ -18,6 +19,7 @@ export default function RootLayout({
           {children}
         </Suspense>
       </body>
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID || "G-XXX"} />
     </html>
   )
 }
