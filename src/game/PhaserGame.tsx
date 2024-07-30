@@ -27,9 +27,9 @@ const config: Phaser.Types.Core.GameConfig = {
     }
 };
 
-export const PhaserGame = ({ level }: { level: number[][] }) => {
+export const PhaserGame = ({ level, id }: { level: number[][], id: string }) => {
     const game = useRef<Phaser.Game | null>(null!);
-
+    
     useLayoutEffect(() =>
     {
         game.current = new Game({ ...config, parent: 'game-container' });
@@ -54,7 +54,7 @@ export const PhaserGame = ({ level }: { level: number[][] }) => {
                 game.current!.scale.resize(window.innerWidth, window.innerHeight);
             }
 
-            game.current!.scene.start('Game', { level });
+            game.current!.scene.start('Game', { level, id });
         }
     }, []);
     

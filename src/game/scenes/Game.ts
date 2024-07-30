@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { Player } from '../object/Player';
 import { Orc, ShooterOrc } from '../object/Enemy';
 import { SpriteObject } from '../object/Entity';
+import { io, Socket } from 'socket.io-client';
 
 export class Game extends Scene
 {
@@ -12,6 +13,8 @@ export class Game extends Scene
     objects: Phaser.Physics.Arcade.Group | undefined;
     platforms: Phaser.Physics.Arcade.StaticGroup | undefined;
     level: number[][] = [];
+    id: string = "";
+    socket: Socket | undefined;
 
     constructor ()
     {
@@ -33,6 +36,8 @@ export class Game extends Scene
     
     init(data: any) {
         this.level = data.level;
+        this.id = data.id;
+        this.socket = io(process.env.NEXT_PUBLIC_BACKEND_URL!);
     }
 
     create()
