@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { JetBrains_Mono } from "next/font/google";
 import "../globals.css";
 import Header from "../../components/header";
-import Tracker from "@/src/components/tracker";
-import { GoogleAnalytics } from "nextjs-google-analytics";
 
 const inter = JetBrains_Mono({ subsets: ["latin"] });
 
@@ -20,8 +18,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <GoogleAnalytics trackPageViews />
-        <Tracker />
         <Header />
         {children}
       </body>

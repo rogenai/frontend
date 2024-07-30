@@ -1,7 +1,5 @@
 import { Suspense } from 'react';
 import '../globals.css';
-import Tracker from '@/src/components/tracker';
-import { GoogleAnalytics } from 'nextjs-google-analytics';
 
 export const metadata = {
   title: 'Game',
@@ -16,8 +14,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <GoogleAnalytics trackPageViews />
-        <Tracker />
         <Suspense>
           {children}
         </Suspense>

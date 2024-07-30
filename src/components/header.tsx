@@ -1,8 +1,11 @@
+"use client"
+import { GoogleAnalytics } from 'nextjs-google-analytics';
 import React from 'react';
 
 const Header: React.FC = () => {
     return (
         <div className="flex justify-between w-full p-3 items-center">
+            <GoogleAnalytics trackPageViews />
             <div className="flex items-center md:mx-[10%]">
                 <img src="/logo.png" alt="logo" className="w-10 h-10" />
                 <a href="/" className="whitespace-nowrap mx-2">Rogen AI</a>
