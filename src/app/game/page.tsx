@@ -23,7 +23,7 @@ const Page = () => {
 
     return (
         <div className="fixed z-10 w-screen-full h-screen-full flex justify-center t-0 b-0">
-            <DynamicComponentWithNoSSR level={level} />
+            <DynamicComponentWithNoSSR level={level} id={id} />
         </div>
     );
 };
