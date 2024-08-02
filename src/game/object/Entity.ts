@@ -41,17 +41,19 @@ export class SpriteObject extends Phaser.Physics.Arcade.Sprite {
 
 export class Entity extends SpriteObject {
     health: number;
+    id: string;
     max_health: number;
     maxHealthBar: Phaser.GameObjects.Rectangle;
     healthBar: Phaser.GameObjects.Rectangle;
 
-    constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number, health: number) {
+    constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number, health: number, id: string) {
         super(scene, sprite, size, hitbox, x, y);
         this.health = health;
         this.max_health = health;
         this.maxHealthBar = this.scene.add.rectangle(this.x, this.y - this.size / 2 - 5, this.size, 4, 0x000000)
         this.healthBar = this.scene.add.rectangle(this.x, this.y - this.size / 2 - 5, this.size, 4, 0x00ff00)
         this.scene.events.on(Phaser.Scenes.Events.POST_UPDATE, () => this.lateUpdate());
+        this.id = id;
     }
 
     protected preUpdate(time: number, delta: number) {
@@ -71,4 +73,6 @@ export class Entity extends SpriteObject {
             this.destroy();
         }
     }
+
+    action(data: any) {}
 }

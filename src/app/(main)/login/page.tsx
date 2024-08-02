@@ -1,6 +1,8 @@
 'use client'
 import { useState } from "react";
 import axiosInstance from "../../axiosInstance";
+import { useRouter } from "next/navigation";
+import { redirect } from "@/src/util/util";
 
 export default function Page() {
     const [state, setState] = useState({
@@ -8,10 +10,12 @@ export default function Page() {
       password: "",
       email: ""
     });
-
+    
     const sendLogin = () => {
       axiosInstance.post("/user/login", state).then((response) => {
-        console.log(response.data);
+        localStorage.setItem("token", response.data.accessToken);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+        redirect("/");
       });
     }
 

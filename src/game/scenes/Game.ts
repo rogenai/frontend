@@ -1,7 +1,7 @@
 import { Scene } from 'phaser';
-import { Player } from '../object/Player';
-import { Orc, ShooterOrc } from '../object/Enemy';
-import { SpriteObject } from '../object/Entity';
+import { OtherPlayer, Player } from '../object/Player';
+import { Enemy, Orc, ShooterOrc } from '../object/Enemy';
+import { Entity, SpriteObject } from '../object/Entity';
 import { io, Socket } from 'socket.io-client';
 
 export class Game extends Scene
@@ -10,11 +10,14 @@ export class Game extends Scene
     background: Phaser.GameObjects.Image | undefined;
     gameText: Phaser.GameObjects.Text | undefined;
     player: Player | undefined;
+    entities: Entity[] = [];
     objects: Phaser.Physics.Arcade.Group | undefined;
     platforms: Phaser.Physics.Arcade.StaticGroup | undefined;
     level: number[][] = [];
     id: string = "";
     socket: Socket | undefined;
+    name: string | undefined;
+    playerId: string = "";
 
     constructor ()
     {
@@ -37,7 +40,17 @@ export class Game extends Scene
     init(data: any) {
         this.level = data.level;
         this.id = data.id;
-        this.socket = io(process.env.NEXT_PUBLIC_BACKEND_URL!);
+        this.name = data.username;
+        const token = localStorage.getItem('token');
+
+        this.socket = io(process.env.NEXT_PUBLIC_BACKEND_URL!, { query: {
+            roomId: this.id,
+            token: token
+        }});
+
+        this.events.once('shutdown', () => {
+            this.socket?.disconnect();
+        });
     }
 
     create()
@@ -141,27 +154,75 @@ export class Game extends Scene
                     platform.setSize(tilesize, tilesize);
                     platform.setDisplaySize(tilesize, tilesize);
                 }
-                else if (this.level[i][j] === 1)
-                {
-                    const enemy = new Orc(this, j * tilesize + offset, i * tilesize + offset);
-                }
                 else if (this.level[i][j] === 3)
                 {
                     h = true;
-                    console.log("e");
-                    this.player = new Player(this, 'player', 20, 10, j * tilesize + offset, i * tilesize + offset);
-                }
-                else if (this.level[i][j] === 4)
-                {
-                    const enemy = new ShooterOrc(this, j * tilesize + offset, i * tilesize + offset);
+                    this.player = new Player(this, 'player', 20, 10, j * tilesize + offset, i * tilesize + offset, this.name!, this.playerId);
                 }
             }
         }
 
         if (!h) {
-            this.player = new Player(this, 'player', 20, 10, 0, 0);
+            this.player = new Player(this, 'player', 20, 10, 0, 0, this.name!, this.playerId);
         }
-        
+
+        this.socket?.on('init', (data) => {
+            this.playerId = data.id;
+            data.entities.forEach((entity: any) => {
+                if (entity.id === this.playerId) return;
+
+                let ent: Entity | undefined = undefined;
+
+                if (entity.entity === 'player') {
+                    console.log("Player created", entity.id, this.playerId);
+                    ent = new OtherPlayer(this, 'player', 20, 10, entity.x, entity.y, entity.name, entity.id);
+                }
+
+                if (entity.entity === 'orc') {
+                    ent = new Orc(this, entity.x, entity.y, entity.id);
+                }
+
+                if (entity.entity === 'ranged_orc') {
+                    ent = new ShooterOrc(this, entity.x, entity.y, entity.id);
+                }
+
+                if (ent === undefined) return;
+
+                this.entities.push(ent);
+            });
+            console.log(this.playerId);
+        });
+
+        this.socket?.on('action', (data) => {
+            const ent = this.entities.find((e) => e.id === data.id);
+            if (data.id === this.playerId) return;
+            if (ent === undefined) {
+                console.log("Entity not found", data.id);
+                console.log(this.entities);
+                return;
+            }
+            ent.action(data);
+        });
+
+        this.socket?.on('join', (player) => {
+            const pl = new OtherPlayer(this, 'player', 20, 10, player.x, player.y, player.name, player.id);
+            this.entities.push(pl);
+        });
+
+        this.socket?.on('leave', (player) => {
+            this.entities = this.entities.filter((p) => p.id !== player.id);
+        });
+
+        this.socket?.on('data', (data) => {
+            data.forEach((entity: any) => {
+                if (entity.id === this.playerId) return;
+                const ent = this.entities.filter((p) => p.id === entity.id)[0];
+                if (ent === undefined) return;
+                ent.x = entity.x;
+                ent.y = entity.y;
+            });
+        });
+
         this.camera.startFollow(this.player!);
         this.camera.zoom = 2;
 
@@ -181,6 +242,8 @@ export class Game extends Scene
         if (this.player!.health <= 0) {
             this.changeScene();
         }
+
+        this.entities = this.entities.filter((e) => e.health > 0);
     }
 
     changeScene()

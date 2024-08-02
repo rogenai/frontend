@@ -2,7 +2,6 @@
 import { Button, Link } from '@/src/components/button';
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
-import axios from 'axios';
 
 type Level = {
   id: string;

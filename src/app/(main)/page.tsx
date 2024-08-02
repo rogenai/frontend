@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import "../anim.css";
+import "../../styles/anim.css";
 import { useRouter } from "next/navigation";
 import { Button } from "../../components/button";
 

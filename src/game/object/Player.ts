@@ -18,9 +18,10 @@ export class Player extends Entity {
     isDamage: boolean;
     isAttack: boolean;
     sword: Sword;
+    nameText: Phaser.GameObjects.Text;
     
-    constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number) {
-        super(scene, sprite, size, hitbox, x, y, 100);
+    constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number, name: string, id: string) {
+        super(scene, sprite, size, hitbox, x, y, 100, id);
         this.type = "player";
         this.health = 100;
         this.isJerk = false;
@@ -28,6 +29,11 @@ export class Player extends Entity {
         this.isCooldownJerk = false;
         this.isAttack = false;
         this.sword = new Sword(scene, x, y);
+        this.nameText = this.scene.add.text(x, y, name, { 
+            fontSize: '6px', 
+            color: '#fff',
+            resolution: 2
+        });
 
         this.scene.input.on('pointerdown', (pointer: any) => {
             if (this.isAttack) return;
@@ -41,10 +47,11 @@ export class Player extends Entity {
                     }
                 });
             });
+            (this.scene as any).socket.emit("attack");
+        });
 
-            this.on('animationcomplete', () => {
-                this.isAttack = false;
-            });
+        this.on('animationcomplete', () => {
+            this.isAttack = false;
         });
     }
 
@@ -73,9 +80,9 @@ export class Player extends Entity {
         }
         
         if (cursors.left.isDown)
-            {
-                this.setVelocityX(-160);
-            }
+        {
+            this.setVelocityX(-160);
+        }
 
         if (!(cursors.down.isDown || cursors.up.isDown)) {
             this.setVelocityY(0);
@@ -86,13 +93,16 @@ export class Player extends Entity {
         }
 
         super.preUpdate(time, delta);
-        this.sword.setPosition(this.x, this.y);
 
         if (this.scene.game.input.mousePointer!.worldX < this.x) {
             this.flipX = true;
         }
         else {
             this.flipX = false;
+        }
+
+        if (this.state !== "idle") {
+            (this.scene as any).socket?.emit('move', { x: this.x, y: this.y });
         }
 
         if (!this.body || this.isAttack) return;
@@ -106,8 +116,80 @@ export class Player extends Entity {
     }
 
     lateUpdate() {
-        this.sword.x = this.x;
-        this.sword.y = this.y;
+        this.sword.setPosition(this.x, this.y);
+        this.nameText.setPosition(this.x - 7, this.y - 25);
+        super.lateUpdate();
+    }
+
+    collide(other: SpriteObject): void {
+        if (other.type === "bullet") {
+            this.health -= 10;
+            other.destroy();
+        }
+    }
+}
+
+export class OtherPlayer extends Entity {
+    isJerk: boolean;
+    isCooldownJerk: boolean;
+    isDamage: boolean;
+    isAttack: boolean;
+    sword: Sword;
+    nameText: Phaser.GameObjects.Text;
+    
+    constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number, name: string, id: string) {
+        super(scene, sprite, size, hitbox, x, y, 100, id);
+        console.log("Player created", name);
+        this.type = "player";
+        this.health = 100;
+        this.isJerk = false;
+        this.name = name;
+        this.isDamage = false;
+        this.isCooldownJerk = false;
+        this.isAttack = false;
+        this.sword = new Sword(scene, x, y);
+        this.nameText = this.scene.add.text(x, y, name, { 
+            fontSize: '6px', 
+            color: '#fff',
+            resolution: 2
+        });
+
+        this.on('animationcomplete', () => {
+            this.isAttack = false;
+            (this.scene as any).socket.emit("damage");
+        });
+    }
+
+    action(data: any) {
+        if (this.isAttack) return;
+        this.state = "attack" + (Math.floor(Math.random() * 2) + 1);
+        this.isAttack = true;
+        
+        this.scene.time.delayedCall(400, () => {
+            this.scene.physics.collide(this.sword, (this.scene as Game).objects, (a, b) => {
+                if ((b as any).type === "enemy") {
+                    (b as any).health -= 50;
+                }
+            });
+        });
+    }
+
+    protected preUpdate(time: number, delta: number): void {
+        super.preUpdate(time, delta);
+        
+        if (!this.body || this.isAttack) return;
+
+        if (this.body.velocity.x === 0 && this.body.velocity.y === 0) {
+            this.state = "idle";
+        }
+        else {
+            this.state = "walk";
+        }
+    }
+
+    lateUpdate() {
+        this.sword.setPosition(this.x, this.y);
+        this.nameText.setPosition(this.x - 7, this.y - 25);
         super.lateUpdate();
     }
 

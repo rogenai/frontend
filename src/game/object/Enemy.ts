@@ -4,22 +4,11 @@ import { Entity, SpriteObject } from "./Entity";
 
 
 export class Enemy extends Entity {
-    actionEvent: Phaser.Time.TimerEvent;
 
-    constructor(scene: Phaser.Scene, sprite: string, x: number, y: number, health: number) {
-        super(scene, sprite, 20, 10, x, y, health);
+    constructor(scene: Phaser.Scene, sprite: string, x: number, y: number, health: number, id: string) {
+        super(scene, sprite, 20, 10, x, y, health, id);
         this.type = "enemy";
-
-        this.actionEvent = this.scene.time.addEvent({
-            delay: 1000,
-            callback: () => this.actionEnemy(),
-            callbackScope: this,
-            loop: true
-        });
-
     }
-
-    actionEnemy() {}
 
     protected preUpdate(time: number, delta: number): void { 
         super.preUpdate(time, delta);
@@ -36,60 +25,47 @@ export class Enemy extends Entity {
             this.state = "walk";
         }
     }
-
-    destroy(fromScene?: boolean) {
-        this.actionEvent.destroy();
-        super.destroy(fromScene);
-    }
 }
 
 export class ShooterOrc extends Enemy {
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, "sorc", x, y, 100);
+    constructor(scene: Phaser.Scene, x: number, y: number, id: string) {
+        super(scene, "sorc", x, y, 100, id);
     }
 
-    actionEnemy() {
-        const x = Math.floor(Math.random() * 3) - 1;
-        const y = Math.floor(Math.random() * 3) - 1;
-        this.setVelocity(x * 50, y * 50);
-        
-        const gameScene = this.scene as Game;
-
-        const dst = new Phaser.Math.Vector2(gameScene.player!.x - this.x, gameScene.player!.y - this.y);
-        if (dst.length() < 100) {
-            const bullet = new Bullet(this.scene, this.x, this.y, dst.normalize().x * 100, dst.normalize().y * 100);
-        }
+    action(data: any) {
+        const bullet = new Bullet(this.scene, this.x, this.y, data.x * 100, data.y * 100);
     }
 }
 
 export class Orc extends Enemy {
     isAttack: boolean;
 
-    constructor(scene: Phaser.Scene, x: number, y: number) {
-        super(scene, "orc", x, y, 100);
+    constructor(scene: Phaser.Scene, x: number, y: number, id: string) {
+        super(scene, "orc", x, y, 100, id);
         this.isAttack = false;
     }
 
-    actionEnemy() {
-        const x = Math.floor(Math.random() * 3) - 1;
-        const y = Math.floor(Math.random() * 3) - 1;
-        this.setVelocity(x * 50, y * 50);
-        
-        const gameScene = this.scene as Game;
-
-        const dst = new Phaser.Math.Vector2(gameScene.player!.x - this.x, gameScene.player!.y - this.y);
-        if (dst.length() < 30) {
-            this.state = "attack";
-            this.isAttack = true;
-            this.scene.time.delayedCall(300, () => {
-                const dst = new Phaser.Math.Vector2(gameScene.player!.x - this.x, gameScene.player!.y - this.y);
+    action(data: any) {
+        this.state = "attack";
+        this.isAttack = true;
+        this.scene.time.delayedCall(300, () => {
+            (this.scene as any).entities.forEach((entity: any) => {
+                if (entity.entity !== "player") return;
+                const dst = new Phaser.Math.Vector2(entity.x - this.x, entity.y - this.y);
                 if (dst.length() < 30) {
-                    gameScene.player!.health -= 10;
+                    entity.health -= 10;
                 }
             });
-            this.on('animationcomplete', () => this.isAttack = false);
-        }
+
+            const player = (this.scene as any).player;
+            const dst = new Phaser.Math.Vector2(player.x - this.x, player.y - this.y);
+            if (dst.length() < 30) {
+                player.health -= 10;
+            }
+        });
+
+        this.on('animationcomplete', () => this.isAttack = false);
     }
 
     preUpdate(time: number, delta: number) {

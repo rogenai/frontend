@@ -1,7 +1,28 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { refreshPage } from '../util/util';
 
-const Header: React.FC = () => {
+export default function Header() {
+
+    const logout = (e: any) => {
+        if (!window) return; 
+        localStorage.removeItem("token");
+        refreshPage();
+        e.preventDefault();
+    }
+
+    const [logined, setLogined] = useState(false);
+
+    useEffect(() => {
+        if (!window) return;
+        setLogined(checkLogin());
+    }, []);
+    
+    const checkLogin = () => {
+        if (!window) return false;
+        return (localStorage.getItem("token") !== null);
+    }
+
     return (
         <div className="flex justify-between w-full p-3 items-center">
             <div className="flex items-center md:mx-[10%]">
@@ -13,10 +34,14 @@ const Header: React.FC = () => {
                 <a href="#" className="transition-all hover:translate-y-[-4px]">Games</a>
                 <a href="#" className="transition-all hover:translate-y-[-4px]">Contact</a>
             </nav>
-            <a href="/register" className="md:mx-[10%]">Register</a>
-            <a href="/login" className="md:mx-[10%]">Login</a>
+            {
+                logined ? 
+                <a href="/logout" className="md:mx-[10%]" onClick={logout}>Logout</a> : 
+                (<>
+                    <a href="/register" className="md:mx-[10%]">Register</a>
+                    <a href="/login" className="md:mx-[10%]">Login</a>
+                </>)
+            }
         </div>
     );
 };
-
-export default Header;
