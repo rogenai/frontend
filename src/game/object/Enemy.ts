@@ -50,6 +50,7 @@ export class Orc extends Enemy {
         this.state = "attack";
         this.isAttack = true;
         this.scene.time.delayedCall(300, () => {
+            if (!this.scene) return;
             (this.scene as any).entities.forEach((entity: any) => {
                 if (entity.entity !== "player") return;
                 const dst = new Phaser.Math.Vector2(entity.x - this.x, entity.y - this.y);

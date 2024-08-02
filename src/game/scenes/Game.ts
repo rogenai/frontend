@@ -38,7 +38,6 @@ export class Game extends Scene
     }
     
     init(data: any) {
-        this.level = data.level;
         this.id = data.id;
         this.name = data.username;
         const token = localStorage.getItem('token');
@@ -135,39 +134,27 @@ export class Game extends Scene
         })
 
         
-        for (let i = 0; i < this.level.length; i++) {
-            for (let j = 0; j < this.level[i].length; j++)
+        for (let i = 0; i < 50; i++) {
+            for (let j = 0; j < 50; j++)
             {
                 const floor = this.add.image(j * tilesize + offset, i * tilesize + offset, 'floor');
                 floor.setDisplaySize(tilesize, tilesize);
             }
         }  
 
-        let h = false;
-        for (let i = 0; i < this.level.length; i++)
-        {
-            for (let j = 0; j < this.level[i].length; j++)
-            {
-                if (this.level[i][j] === 2)
-                {
-                    const platform = this.platforms.create(j * tilesize + offset, i * tilesize + offset, 'wall');
-                    platform.setSize(tilesize, tilesize);
-                    platform.setDisplaySize(tilesize, tilesize);
-                }
-                else if (this.level[i][j] === 3)
-                {
-                    h = true;
-                    this.player = new Player(this, 'player', 20, 10, j * tilesize + offset, i * tilesize + offset, this.name!, this.playerId);
-                }
-            }
-        }
-
-        if (!h) {
-            this.player = new Player(this, 'player', 20, 10, 0, 0, this.name!, this.playerId);
-        }
+        this.player = new Player(this, 'player', 20, 10, 0, 0, this.name!, this.playerId);
 
         this.socket?.on('init', (data) => {
             this.playerId = data.id;
+            this.player!.x = data.spawnX;
+            this.player!.y = data.spawnY;
+
+            data.platforms.forEach((plat: any) => {
+                const platform = this.platforms!.create(plat.x, plat.y, 'wall');
+                platform.setSize(tilesize, tilesize);
+                platform.setDisplaySize(tilesize, tilesize);
+            });
+            
             data.entities.forEach((entity: any) => {
                 if (entity.id === this.playerId) return;
 
@@ -219,6 +206,16 @@ export class Game extends Scene
                 if (entity.id === this.playerId) return;
                 const ent = this.entities.filter((p) => p.id === entity.id)[0];
                 if (ent === undefined) return;
+                if (ent.type !== "player") {
+                    this.tweens.add({
+                        targets: ent,
+                        ease: 'Expo.easeInOut',
+                        x: entity.x,
+                        y: entity.y,
+                        duration: 700
+                    });
+                    return;
+                }
                 ent.x = entity.x;
                 ent.y = entity.y;
             });

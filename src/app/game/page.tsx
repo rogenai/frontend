@@ -12,7 +12,6 @@ const DynamicComponentWithNoSSR = dynamic(
 
 const Page = () => {
     const id = useSearchParams().get("id");
-    const [level, setLevel] = useState<any>([]);
     const [username, setUsername] = useState<string>("");
 
     useEffect(() => {
@@ -24,20 +23,14 @@ const Page = () => {
             }
         });
 
-        axiosInstance.get(`/level/${id}`).then((response) => {
-            setLevel(response.data.map);
-        });
-
         if (id !== 'tutorial') {
             setUsername(JSON.parse(localStorage.getItem('user')!).username);
         }
     }, []);
 
-    if (level.length === 0) return <Loader />;
-
     return (
         <div className="fixed z-10 w-screen-full h-screen-full flex justify-center t-0 b-0">
-            <DynamicComponentWithNoSSR level={level} id={id} username={username} />
+            <DynamicComponentWithNoSSR id={id} username={username} />
         </div>
     );
 };
