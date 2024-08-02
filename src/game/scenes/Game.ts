@@ -193,6 +193,7 @@ export class Game extends Scene
             console.log(this.playerId);
         });
 
+
         this.socket?.on('action', (data) => {
             const ent = this.entities.find((e) => e.id === data.id);
             if (data.id === this.playerId) return;
