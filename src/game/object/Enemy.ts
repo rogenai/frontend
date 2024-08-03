@@ -34,6 +34,7 @@ export class ShooterOrc extends Enemy {
     }
 
     action(data: any) {
+        if (!this.scene) return;
         const bullet = new Bullet(this.scene, this.x, this.y, data.x * 100, data.y * 100);
     }
 }

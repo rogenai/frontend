@@ -184,7 +184,7 @@ export class Game extends Scene
         this.socket?.on('action', (data) => {
             const ent = this.entities.find((e) => e.id === data.id);
             if (data.id === this.playerId) return;
-            if (ent === undefined) {
+            if (!ent) {
                 console.log("Entity not found", data.id);
                 console.log(this.entities);
                 return;
