@@ -193,6 +193,7 @@ export class Game extends Scene
         });
 
         this.socket?.on('join', (player) => {
+            if (this.entities.some((p) => p.id === player.id)) return;
             const pl = new OtherPlayer(this, 'player', 20, 10, player.x, player.y, player.name, player.id);
             this.entities.push(pl);
         });

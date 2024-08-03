@@ -7,6 +7,9 @@ export class SpriteObject extends Phaser.Physics.Arcade.Sprite {
     hitbox: number;
 
     constructor(scene: Phaser.Scene, sprite: string, size: number, hitbox: number, x: number, y: number) {
+        if (!scene) {
+            console.log("Scene is null");
+        }
         super(scene, x, y, sprite);
         this.sprite = sprite;
         this.type = "default";

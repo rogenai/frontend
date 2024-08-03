@@ -66,22 +66,22 @@ export class Player extends Entity {
 
         if (cursors.up.isDown)
         {
-            this.setVelocityY(-160);
+            this.setVelocityY(-100);
         }
 
         if (cursors.down.isDown)
         {
-            this.setVelocityY(160);
+            this.setVelocityY(100);
         }
 
         if (cursors.right.isDown)
         {
-            this.setVelocityX(160);
+            this.setVelocityX(100);
         }
         
         if (cursors.left.isDown)
         {
-            this.setVelocityX(-160);
+            this.setVelocityX(-100);
         }
 
         if (!(cursors.down.isDown || cursors.up.isDown)) {
