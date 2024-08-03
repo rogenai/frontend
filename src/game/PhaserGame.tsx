@@ -3,8 +3,9 @@ import { useEffect, useLayoutEffect, useRef} from 'react';
 import { Boot } from './scenes/Boot';
 import { Game as MainGame } from './scenes/Game';
 import { AUTO, Game } from 'phaser';
-import { Preloader } from './scenes/Preloader';
+import { Preloader, TutorialPreloader } from './scenes/Preloader';
 import { GameOver } from './scenes/GameOver';
+import { Tutorial } from './scenes/Tutorial';
 
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
@@ -16,6 +17,27 @@ const config: Phaser.Types.Core.GameConfig = {
         Boot,
         Preloader,
         MainGame,
+        GameOver,
+    ],
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0, x: 0 },
+            debug: false
+        }
+    }
+};
+
+const tutorialConfig: Phaser.Types.Core.GameConfig = {
+    type: AUTO,
+    width: 800,
+    height: 600,
+    parent: 'game-container',
+    backgroundColor: '#028af8',
+    scene: [
+        Boot,
+        TutorialPreloader,
+        Tutorial,
         GameOver
     ],
     physics: {
@@ -32,7 +54,7 @@ export const PhaserGame = ({ level, id, username }: { level: number[][], id: str
     
     useLayoutEffect(() =>
     {
-        game.current = new Game({ ...config, parent: 'game-container' });
+        game.current = new Game({ ...(id === "tutorial" ? tutorialConfig : config), parent: 'game-container' });
 
         
         return () =>
@@ -54,7 +76,12 @@ export const PhaserGame = ({ level, id, username }: { level: number[][], id: str
                 game.current!.scale.resize(window.innerWidth, window.innerHeight);
             }
 
-            game.current!.scene.start('Game', { level, id, username });
+            if (id === 'tutorial') {
+                game.current!.scene.start('Tutorial', { level, id });
+            }
+            else {
+                game.current!.scene.start('Game', { level, id, username });
+            }
         }
     }, []);
     

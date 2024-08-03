@@ -31,8 +31,8 @@ export default function Header() {
             </div>
             <nav className="flex gap-4 rounded-full bg-[#2b2b2b] px-4 py-2 text-sm font-bold">
                 <a href="/" className="transition-all hover:translate-y-[-4px]">Home</a>
-                <a href="#" className="transition-all hover:translate-y-[-4px]">Games</a>
-                <a href="#" className="transition-all hover:translate-y-[-4px]">Contact</a>
+                <a href="/levels" className="transition-all hover:translate-y-[-4px]">Levels</a>
+                <a href="/rooms" className="transition-all hover:translate-y-[-4px]">Rooms</a>
             </nav>
             {
                 logined ? 

@@ -1,27 +1,24 @@
 import { Scene } from 'phaser';
-import { OtherPlayer, Player } from '../object/Player';
+import { OtherPlayer, Player, TutorialPlayer } from '../object/Player';
 import { Enemy, Orc, ShooterOrc } from '../object/Enemy';
 import { Entity, SpriteObject } from '../object/Entity';
-import { io, Socket } from 'socket.io-client';
 
-export class Game extends Scene
+export class Tutorial extends Scene
 {
     camera: Phaser.Cameras.Scene2D.Camera | undefined;
     background: Phaser.GameObjects.Image | undefined;
     gameText: Phaser.GameObjects.Text | undefined;
-    player: Player | undefined;
+    player: TutorialPlayer | undefined;
     entities: Entity[] = [];
     objects: Phaser.Physics.Arcade.Group | undefined;
     platforms: Phaser.Physics.Arcade.StaticGroup | undefined;
     level: number[][] = [];
     id: string = "";
-    socket: Socket | undefined;
-    name: string | undefined;
-    playerId: string = "";
+    ruleText: Phaser.GameObjects.Text | undefined;
 
     constructor ()
     {
-        super('Game');
+        super('Tutorial');
     }
 
     preload() {
@@ -39,20 +36,7 @@ export class Game extends Scene
     
     init(data: any) {
         this.id = data.id;
-        this.name = data.username;
-        const token = localStorage.getItem('token');
-
-        this.socket = io(process.env.NEXT_PUBLIC_BACKEND_URL!, {
-            autoConnect: false,
-            query: {
-                roomId: this.id,
-                token: token
-            }
-        });
-
-        this.events.once('shutdown', () => {
-            this.socket?.disconnect();
-        });
+        this.level = data.level;
     }
 
     create()
@@ -62,11 +46,6 @@ export class Game extends Scene
         
         this.platforms = this.physics.add.staticGroup();
         this.objects = this.physics.add.group();
-
-        if (this.id === "tutorial" || !this.id) return;
-
-        console.log("Connecting to socket", this.id);
-        this.socket?.connect();
 
         const tilesize = 30;
         const offset = 0;
@@ -150,89 +129,28 @@ export class Game extends Scene
             }
         }  
 
-        this.player = new Player(this, 'player', 20, 10, 0, 0, this.name!, this.playerId);
-
-        this.socket?.on('init', (data) => {
-            this.playerId = data.id;
-            this.player!.x = data.spawnX;
-            this.player!.y = data.spawnY;
-
-            data.platforms.forEach((plat: any) => {
-                const platform = this.platforms!.create(plat.x, plat.y, 'wall');
-                platform.setSize(tilesize, tilesize);
-                platform.setDisplaySize(tilesize, tilesize);
-            });
-            
-            data.entities.forEach((entity: any) => {
-                if (entity.id === this.playerId) return;
-
-                let ent: Entity | undefined = undefined;
-
-                if (entity.entity === 'player') {
-                    console.log("Player created", entity.id, this.playerId);
-                    ent = new OtherPlayer(this, 'player', 20, 10, entity.x, entity.y, entity.name, entity.id);
+        for (let i = 0; i < this.level.length; i++) {
+            for (let j = 0; j < this.level[i].length; j++) {
+                if (this.level[i][j] === 1) {
+                    const enemy = new Orc(this, i * tilesize + offset, j * tilesize + offset, "orcID");
+                }
+                if (this.level[i][j] === 2) {
+                    const platform = this.platforms!.create(i * tilesize + offset, j * tilesize + offset, 'wall');
+                    platform.setSize(tilesize, tilesize);
+                    platform.setDisplaySize(tilesize, tilesize);
+                    console.log("Platform", i * tilesize + offset, j * tilesize + offset);
                 }
 
-                if (entity.entity === 'orc') {
-                    ent = new Orc(this, entity.x, entity.y, entity.id);
+                if (this.level[i][j] === 3) {
+                    this.player = new TutorialPlayer(this, 'player', 20, 10, i * tilesize + offset, j * tilesize + offset, "Player", "playerID");
                 }
 
-                if (entity.entity === 'ranged_orc') {
-                    ent = new ShooterOrc(this, entity.x, entity.y, entity.id);
+                if (this.level[i][j] === 4) {
+                    const enemy = new ShooterOrc(this, i * tilesize + offset, j * tilesize + offset, "shooterID");
                 }
-                
-                if (ent === undefined) return;
-
-                ent.health = entity.health;
-                this.entities.push(ent);
-            });
-            console.log(this.playerId);
-        });
-
-
-        this.socket?.on('action', (data) => {
-            const ent = this.entities.find((e) => e.id === data.id);
-            if (data.id === this.playerId) return;
-            if (!ent) {
-                console.log("Entity not found", data.id);
-                return;
             }
-            ent.action(data);
-        });
+        }
 
-        this.socket?.on('join', (player) => {
-            if (this.entities.some((p) => p.id === player.id)) return;
-            const pl = new OtherPlayer(this, 'player', 20, 10, player.x, player.y, player.name, player.id);
-            this.entities.push(pl);
-        });
-
-        this.socket?.on('leave', (player) => {
-            this.entities = this.entities.filter((p) => p.id !== player.id);
-        });
-
-        this.socket?.on('data', (data) => {
-            data.forEach((entity: any) => {
-                if (entity.id === this.playerId) {
-                    this.player!.health = entity.health;
-                    return;
-                }
-                const ent = this.entities.filter((p) => p.id === entity.id)[0];
-                if (ent === undefined) return;
-                ent.health = entity.health;
-                if (ent.type !== "player") {
-                    this.tweens.add({
-                        targets: ent,
-                        ease: 'Expo.easeInOut',
-                        x: entity.x,
-                        y: entity.y,
-                        duration: 700
-                    });
-                    return;
-                }
-                ent.x = entity.x;
-                ent.y = entity.y;
-            });
-        });
 
         this.camera.startFollow(this.player!);
         this.camera.zoom = 2;
@@ -242,6 +160,8 @@ export class Game extends Scene
                 a.destroy();
             }
         });
+        
+        this.ruleText = this.add.text(10, 10, "WASD - for moving\nMouse Left Click - for attacking\nESC - for leaving to main page", { fontSize: '8px', color: '#fff', resolution: 2 });
 
         this.physics.add.overlap(this.objects, this.objects, (a, b) => {
             (a as any).collide(b);
@@ -250,15 +170,18 @@ export class Game extends Scene
     }
 
     update() {
+        this.ruleText!.x = this.player!.x - 50;
+        this.ruleText!.y = this.player!.y - 50;
+
+
         if (this.player!.health <= 0) {
             this.changeScene();
         }
-
-        this.entities = this.entities.filter((e) => e.health > 0);
     }
+    
 
     changeScene()
     {
-        window.location.href = "/";
+        this.scene.start('GameOver');
     }
 }

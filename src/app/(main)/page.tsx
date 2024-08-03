@@ -19,7 +19,7 @@ export default function Home() {
             Rogen AI - first AI powered roguelike game where you can play with friends.
           </p>
           <Button className="mt-10 w-full transition-all" placeholder="Play" onClick={() => { p.push("/game?id=tutorial") }} />
-          <Button className="mt-5 w-full transition-all bg-transparent border-solid border-2 border-[#9767FF] text-[#9767FF]" placeholder="Skip tutorial" onClick={() => { p.push("/dashboard") }} />
+          <Button className="mt-5 w-full transition-all bg-transparent border-solid border-2 border-[#9767FF] text-[#9767FF]" placeholder="Skip tutorial" onClick={() => { p.push("/levels") }} />
         </div>
         </div>
         <ul className="circles">
