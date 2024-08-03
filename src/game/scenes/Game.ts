@@ -172,9 +172,10 @@ export class Game extends Scene
                 if (entity.entity === 'ranged_orc') {
                     ent = new ShooterOrc(this, entity.x, entity.y, entity.id);
                 }
-
+                
                 if (ent === undefined) return;
 
+                ent.health = entity.health;
                 this.entities.push(ent);
             });
             console.log(this.playerId);
@@ -186,7 +187,6 @@ export class Game extends Scene
             if (data.id === this.playerId) return;
             if (!ent) {
                 console.log("Entity not found", data.id);
-                console.log(this.entities);
                 return;
             }
             ent.action(data);
@@ -204,9 +204,13 @@ export class Game extends Scene
 
         this.socket?.on('data', (data) => {
             data.forEach((entity: any) => {
-                if (entity.id === this.playerId) return;
+                if (entity.id === this.playerId) {
+                    this.player!.health = entity.health;
+                    return;
+                }
                 const ent = this.entities.filter((p) => p.id === entity.id)[0];
                 if (ent === undefined) return;
+                ent.health = entity.health;
                 if (ent.type !== "player") {
                     this.tweens.add({
                         targets: ent,

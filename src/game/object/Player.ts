@@ -42,9 +42,8 @@ export class Player extends Entity {
             
             this.scene.time.delayedCall(400, () => {
                 this.scene.physics.collide(this.sword, (this.scene as Game).objects, (a, b) => {
-                    if ((b as any).type === "enemy") {
-                        (b as any).health -= 50;
-                    }
+                    if ((b as any).type !== "enemy") return;
+                    (this.scene as any).socket.emit("damage", { id: (b as Entity).id, damage: 50 });
                 });
             });
             (this.scene as any).socket.emit("attack");
@@ -123,7 +122,9 @@ export class Player extends Entity {
 
     collide(other: SpriteObject): void {
         if (other.type === "bullet") {
-            this.health -= 10;
+            if (this.scene) {
+                (this.scene as any).socket.emit("damage-got", 10);
+            }
             other.destroy();
         }
     }
@@ -164,14 +165,6 @@ export class OtherPlayer extends Entity {
         if (this.isAttack) return;
         this.state = "attack" + (Math.floor(Math.random() * 2) + 1);
         this.isAttack = true;
-        
-        this.scene.time.delayedCall(400, () => {
-            this.scene.physics.collide(this.sword, (this.scene as Game).objects, (a, b) => {
-                if ((b as any).type === "enemy") {
-                    (b as any).health -= 50;
-                }
-            });
-        });
     }
 
     protected preUpdate(time: number, delta: number): void {
@@ -195,7 +188,6 @@ export class OtherPlayer extends Entity {
 
     collide(other: SpriteObject): void {
         if (other.type === "bullet") {
-            this.health -= 10;
             other.destroy();
         }
     }

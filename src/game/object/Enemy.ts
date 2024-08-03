@@ -48,6 +48,7 @@ export class Orc extends Enemy {
     }
 
     action(data: any) {
+        if (!this.scene) return;
         this.state = "attack";
         this.isAttack = true;
         this.scene.time.delayedCall(300, () => {
