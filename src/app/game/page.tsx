@@ -3,6 +3,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import axiosInstance from "../axiosInstance";
 import dynamic from 'next/dynamic';
+import Loader from "@/src/components/loader";
 
 const DynamicComponentWithNoSSR = dynamic(
   () => import('@/src/Rogen'),
@@ -23,15 +24,12 @@ const Page = () => {
             });
             return;
         }
-
-        axiosInstance.get(`/room/exists/${id}`).then((response) => {
-            if (!response.data.exists) {
-
-            }
-        });
         setUsername(JSON.parse(localStorage.getItem('user')!).username);
-
     }, []);
+
+    if (level.length === 0) {
+        return <Loader />;
+    }
 
     return (
         <div className="fixed z-10 w-screen-full h-screen-full flex justify-center t-0 b-0">

@@ -2,6 +2,7 @@ import { Scene } from 'phaser';
 import { OtherPlayer, Player, TutorialPlayer } from '../object/Player';
 import { Enemy, Orc, ShooterOrc } from '../object/Enemy';
 import { Entity, SpriteObject } from '../object/Entity';
+import axiosInstance from '@/src/app/axiosInstance';
 
 export class Tutorial extends Scene
 {
@@ -153,6 +154,8 @@ export class Tutorial extends Scene
 
         if (!this.player) {
             this.player = new TutorialPlayer(this, 'player', 20, 10, 0, 0, "Player", "playerID");
+            console.log(this.level);
+            console.log(this.id);
         }
         
         this.camera.startFollow(this.player!);
