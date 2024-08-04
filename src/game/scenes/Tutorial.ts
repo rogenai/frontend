@@ -151,7 +151,10 @@ export class Tutorial extends Scene
             }
         }
 
-
+        if (!this.player) {
+            this.player = new TutorialPlayer(this, 'player', 20, 10, 0, 0, "Player", "playerID");
+        }
+        
         this.camera.startFollow(this.player!);
         this.camera.zoom = 2;
 
