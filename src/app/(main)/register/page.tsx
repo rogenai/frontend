@@ -12,15 +12,14 @@ export default function Page() {
         email: ""
     });
 
-    const router = useRouter();
-
-    const sendRegister = () => {
+    const sendRegister = (e: any) => {
       axiosInstance.post("/user/register", state).then((response) => {
         redirect("/");
       }).catch((err) => {
-        toast.error("Error occured while registering");
+        toast.error("Error occured while registering. May be you have already registered with this email?");
         console.log("Error occured while logging in", err);
       });
+      e.preventDefault();
     }
 
     return (
@@ -37,8 +36,8 @@ export default function Page() {
           className="w-3/4 h-10 bg-[#4b4b4b] rounded-full px-4 py-2 mt-4 focus:outline-none" 
           onChange={(e) => setState({ ...state, password: e.target.value })} />
           <button className="w-3/4 h-10 bg-[#9767FF] rounded-full px-4 py-2 mt-4 font-bold focus:outline-none text-white"
-            onSubmit={sendRegister}>
-          Login
+            onClick={sendRegister}>
+          Register
           </button>
         </form>
       </div>

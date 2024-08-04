@@ -11,15 +11,17 @@ export default function Page() {
       email: ""
     });
     
-    const sendLogin = () => {
+    const sendLogin = (e: any) => {
       axiosInstance.post("/user/login", state).then((response) => {
         localStorage.setItem("token", response.data.accessToken);
         localStorage.setItem("user", JSON.stringify(response.data.user));
+        toast.success("Logged in!");
         redirect("/");
       }).catch((err) => {
         toast.error("Invalid credentials!");
         console.log("Error occured while logging in", err);
       });
+      e.preventDefault();
     }
 
     return (
@@ -33,7 +35,7 @@ export default function Page() {
             className="w-3/4 h-10 bg-[#4b4b4b] rounded-full px-4 py-2 mt-4 focus:outline-none" 
             onChange={(e) => setState({ ...state, password: e.target.value })} />
             <button className="w-3/4 h-10 bg-[#9767FF] rounded-full px-4 py-2 mt-4 font-bold focus:outline-none text-white"
-              onSubmit={sendLogin}>
+              onClick={sendLogin}>
             Login
             </button>
             <a href="/register" className="text-[#9767FF] mt-4 hover:text-blue-900">Don&apos;t have account?</a>
