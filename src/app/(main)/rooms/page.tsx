@@ -24,6 +24,13 @@ export default function RoomsPage() {
   const [name, setName] = useState<string>("");
 
   useEffect(() => {
+    
+    if (!window) return;
+    if (localStorage.getItem('token') === null) {
+      window.location.href = '/login';
+      return;
+    }
+    
     axiosInstance.get('/room/').then((response) => {
       setRooms(response.data);
     });

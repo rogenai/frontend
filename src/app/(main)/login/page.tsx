@@ -1,8 +1,8 @@
 'use client'
 import { useState } from "react";
 import axiosInstance from "../../axiosInstance";
-import { useRouter } from "next/navigation";
 import { redirect } from "@/src/util/util";
+import { Link } from "@/src/components/button";
 
 export default function Page() {
     const [state, setState] = useState({
@@ -33,6 +33,7 @@ export default function Page() {
               onClick={sendLogin}>
             Login
             </button>
+            <a href="/register" className="text-[#9767FF] mt-4 hover:text-blue-900">Don't have account?</a>
           </div>
         </div>
       );

@@ -34,6 +34,13 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
+
+    if (!window) return;
+    if (localStorage.getItem('token') === null) {
+      window.location.href = '/login';
+      return;
+    }
+
     axiosInstance.get('/level/all').then((response) => {
       setLevels(response.data);
     });
