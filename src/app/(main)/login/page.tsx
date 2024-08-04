@@ -33,7 +33,7 @@ export default function Page() {
               onClick={sendLogin}>
             Login
             </button>
-            <a href="/register" className="text-[#9767FF] mt-4 hover:text-blue-900">Don't have account?</a>
+            <a href="/register" className="text-[#9767FF] mt-4 hover:text-blue-900">Don&apos;t have account?</a>
           </div>
         </div>
       );
