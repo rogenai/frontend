@@ -27,7 +27,7 @@ const Page = () => {
         setUsername(JSON.parse(localStorage.getItem('user')!).username);
     }, []);
 
-    if (level.length === 0) {
+    if (level.length === 0 && id === 'tutorial') {
         return <Loader />;
     }
 

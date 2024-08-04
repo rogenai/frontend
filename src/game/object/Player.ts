@@ -252,8 +252,14 @@ export class TutorialPlayer extends Entity {
             'down': Phaser.Input.Keyboard.KeyCodes.S,
             'left': Phaser.Input.Keyboard.KeyCodes.A,
             'right': Phaser.Input.Keyboard.KeyCodes.D,
-            'shift': Phaser.Input.Keyboard.KeyCodes.SHIFT
+            'shift': Phaser.Input.Keyboard.KeyCodes.SHIFT,
+            'esc': Phaser.Input.Keyboard.KeyCodes.ESC
         }) as any;
+
+        if (cursors.esc.isDown) {
+            window.location.href = "/";
+            return;
+        }
 
         if (cursors.up.isDown)
         {
