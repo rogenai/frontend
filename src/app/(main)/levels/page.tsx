@@ -3,6 +3,7 @@ import { Button, Link } from '@/src/components/button';
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../axiosInstance';
 import { Input } from '@/src/components/input';
+import { toast } from 'react-toastify';
 
 type Level = {
   id: string;
@@ -26,6 +27,8 @@ export default function Dashboard() {
     axiosInstance.post('/level/generate', {
       difficulty: value,
       name
+    }).then(() => {
+      toast.success("Level generated successfully");
     });
 
     axiosInstance.get('/level/all').then((response) => {
